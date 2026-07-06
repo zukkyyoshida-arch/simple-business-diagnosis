@@ -34,25 +34,39 @@ const parseAllAnswers = (rawAnswersStr) => {
     if (legacyMatch) {
       const qId = legacyMatch[1];
       const codes = legacyMatch[2];
-      const note = legacyMatch[3];
+      const note = legacyMatch[3] || null;
       
       const { qText, oTexts } = getQuestionAndOptionText(qId, codes);
-      let answerPart = oTexts;
-      if (note) answerPart += `\n(補足: ${note})`;
+      // oTexts は "\n・opt1\n・opt2" の形式になっているので、配列に戻す
+      const options = oTexts.split('\n').map(s => s.trim().replace(/^・/, '')).filter(Boolean);
       
-      return { question: `${qId}. ${qText}`, answer: answerPart, raw: item };
+      return { question: `${qId}. ${qText}`, options, note, raw: item };
     }
     
-    // 新しいフォーマットかチェック (例: A1. 〇〇 => △△ (補足: ××))
+    // 新しいフォーマットかチェック (例: A1. 〇〇 => \n・△△\n・×× (補足: 〇〇))
     const parts = item.split(' => ');
     if (parts.length >= 2) {
-      const questionPart = parts[0];
-      const answerPart = parts.slice(1).join(' => ');
-      return { question: questionPart, answer: answerPart, raw: item };
+      const questionPart = parts[0].trim();
+      let answerPart = parts.slice(1).join(' => ');
+
+      // 補足を抽出
+      let note = null;
+      const noteMatch = answerPart.match(/\n?\(補足: (.*?)\)$/);
+      if (noteMatch) {
+        note = noteMatch[1];
+        answerPart = answerPart.replace(noteMatch[0], ''); // 補足部分を削除
+      }
+
+      // オプションを配列化（"・"や改行で分割）
+      const options = answerPart.split('\n')
+        .map(s => s.trim().replace(/^・/, ''))
+        .filter(Boolean);
+
+      return { question: questionPart, options, note, raw: item };
     }
 
     // フォーマット外の場合はそのまま
-    return { question: null, answer: null, raw: item };
+    return { question: null, options: [], note: null, raw: item };
   });
 };
 
@@ -206,16 +220,31 @@ const ClientDetail = ({ client, onBack }) => {
         
         <div style={{ fontSize: '0.875rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
           <strong style={{ display: 'block', marginBottom: '1rem', fontSize: '1rem' }}>すべての回答詳細:</strong>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {parsedAnswers.length > 0 ? parsedAnswers.map((ans, idx) => {
-              if (ans.question && ans.answer) {
+              if (ans.question && ans.options.length > 0) {
                 return (
-                  <div key={idx} style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
-                    <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--primary)' }}>{ans.question}</div>
-                    <div style={{ color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{ans.answer}</div>
+                  <div key={idx} style={{ background: 'var(--background)', padding: '1rem', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--primary)' }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-main)', fontSize: '0.95rem' }}>
+                      {ans.question}
+                    </div>
+                    <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                      {ans.options.map((opt, oIdx) => (
+                        <li key={oIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                          <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>✓</span>
+                          <span>{opt}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {ans.note && (
+                      <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: 'rgba(0,0,0,0.03)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        <strong style={{ color: 'var(--text-main)' }}>補足:</strong> {ans.note}
+                      </div>
+                    )}
                   </div>
                 );
               }
+              // パースに失敗した文字列などのフォールバック
               return (
                 <div key={idx} style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
                   {ans.raw}
