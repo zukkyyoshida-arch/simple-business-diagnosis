@@ -104,13 +104,9 @@ const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
       </div>
 
       <div style={{ textAlign: 'left', marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
-        <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>
+        <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 600, color: 'var(--text-main)' }}>
           <CheckCircle size={20} color="var(--primary)" />
           3営業日以内に詳しい診断レポートをメールでお送りします。
-        </p>
-        <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 600, color: 'var(--accent)' }}>
-          <CheckCircle size={20} color="var(--accent)" />
-          営業のお電話はいたしません。
         </p>
       </div>
     </div>

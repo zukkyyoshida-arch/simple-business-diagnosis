@@ -30,18 +30,7 @@ const Intro = ({ onStart }) => {
             <span style={{ color: 'var(--secondary)' }}>✓</span> 
             <span>結果は3営業日以内に、A4数ページの診断レポート（PDF）でメールにてお送りします</span>
           </li>
-          <li style={{ display: 'flex', gap: '0.5rem' }}>
-            <span style={{ color: 'var(--accent)' }}>✓</span> 
-            <strong style={{ color: 'var(--accent)' }}>営業のお電話はいたしません</strong>
-          </li>
         </ul>
-      </div>
-
-      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '2rem', padding: '1rem', borderTop: '1px solid var(--border)' }}>
-        <p style={{ marginBottom: '0.5rem', fontWeight: 600 }}>無料である理由</p>
-        <p style={{ margin: 0 }}>
-          この診断は、当社の業務見える化サービスの入口として無料でご提供しています。 ご回答は匿名の統計データとして診断精度の向上に活用させていただきます。 診断レポートをご覧いただき、必要と感じた方にだけ、次のステップ（有料）をご案内します。 営業のお電話はいたしません。 ご連絡はレポート送付のメールのみです。
-        </p>
       </div>
 
       <button className="btn btn-primary" onClick={onStart}>

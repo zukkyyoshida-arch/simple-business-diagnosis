@@ -27,8 +27,8 @@ const ContactForm = ({ initialData, onSubmit, onPrev }) => {
     <div className="glass-panel animate-enter">
       <div className="badge">最後のステップ</div>
       <h2>レポートの送付先をご入力ください</h2>
-      <p style={{ fontWeight: 600, color: 'var(--accent)' }}>
-        ※営業のお電話はいたしません。レポートはメールでお送りします。
+      <p style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+        ※レポートはメールでお送りします。
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8">
