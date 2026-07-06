@@ -7,7 +7,7 @@ const Intro = ({ onStart }) => {
       <div className="text-center mb-4">
         <ClipboardCheck size={48} color="var(--primary)" style={{ margin: '0 auto' }} />
       </div>
-      <h1 className="text-center">簡易業務診断</h1>
+      <h1 className="text-center">Arino Shift mini</h1>
       <p className="text-center" style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '1.1rem' }}>
         御社の業務、どこに手間が眠っているか。<br/>25問で棚卸しします。
       </p>
