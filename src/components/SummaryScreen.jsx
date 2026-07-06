@@ -40,9 +40,9 @@ const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
         if (GAS_ENDPOINT_URL) {
           await fetch(GAS_ENDPOINT_URL, {
             method: 'POST',
-            mode: 'no-cors', // GASへのPOSTのCORS回避用
+            mode: 'no-cors',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'text/plain;charset=utf-8',
             },
             body: JSON.stringify(payload)
           });
