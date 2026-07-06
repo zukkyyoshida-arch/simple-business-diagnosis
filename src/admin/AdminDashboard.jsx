@@ -47,9 +47,6 @@ const AdminDashboard = ({ token, onSelectClient, onLogout }) => {
           <button className="btn btn-secondary" onClick={fetchData} style={{ padding: '0.5rem', width: 'auto' }}>
             <RefreshCw size={18} />
           </button>
-          <button className="btn btn-secondary" onClick={onLogout} style={{ padding: '0.5rem', width: 'auto' }}>
-            <LogOut size={18} />
-          </button>
         </div>
       </div>
 
