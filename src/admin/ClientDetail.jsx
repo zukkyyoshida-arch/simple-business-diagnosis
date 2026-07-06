@@ -144,23 +144,33 @@ const ClientDetail = ({ client, onBack }) => {
         </div>
       </div>
 
-      {/* 自動インサイトパネル */}
+      {/* AI自動分析パネル */}
       <div className="glass-panel mb-4" style={{ borderColor: 'var(--primary)', background: 'rgba(14, 165, 233, 0.05)' }}>
         <h3 style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <Lightbulb size={18} /> AI自動分析（インサイト）
+          <Lightbulb size={18} /> {client['Ollama分析結果'] ? 'AI自動分析（Ollama）' : 'AI自動分析（速報値）'}
         </h3>
-        <div style={{ fontSize: '0.875rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-          <p style={{ marginBottom: '0.75rem' }}><strong>【総評】</strong><br/>{insight.evaluation} {insight.bottleneck}</p>
-          {insight.risks.length > 0 && (
-            <div style={{ marginBottom: '0.75rem' }}>
-              <strong>【特記事項・リスク】</strong>
-              <ul style={{ paddingLeft: '1.25rem', margin: '0.25rem 0 0 0' }}>
-                {insight.risks.map((risk, idx) => <li key={idx} style={{ marginBottom: '0.25rem' }}>{risk}</li>)}
-              </ul>
+        
+        {client['Ollama分析結果'] ? (
+          <div style={{ fontSize: '0.875rem', lineHeight: '1.7', color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>
+            {client['Ollama分析結果']}
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.875rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
+            <div style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.8rem', background: '#e0f2fe', padding: '0.5rem', borderRadius: '4px' }}>
+              ※ローカルAI（Ollama）による詳細分析を待機中です。以下はスコアに基づく簡易レポートです。
             </div>
-          )}
-          <p style={{ margin: 0 }}><strong>【推奨アクション】</strong><br/>{insight.recommendation}</p>
-        </div>
+            <p style={{ marginBottom: '0.75rem' }}><strong>【総評】</strong><br/>{insight.evaluation} {insight.bottleneck}</p>
+            {insight.risks.length > 0 && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <strong>【特記事項・リスク】</strong>
+                <ul style={{ paddingLeft: '1.25rem', margin: '0.25rem 0 0 0' }}>
+                  {insight.risks.map((risk, idx) => <li key={idx} style={{ marginBottom: '0.25rem' }}>{risk}</li>)}
+                </ul>
+              </div>
+            )}
+            <p style={{ margin: 0 }}><strong>【推奨アクション】</strong><br/>{insight.recommendation}</p>
+          </div>
+        )}
       </div>
 
       <div className="glass-panel mb-4">
