@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, AlertTriangle, Lightbulb } from 'lucide-react';
-import { sections } from '../data/questions';
+import { sections, CROSS_PATTERNS } from '../data/questions';
 
 // 古い記号データからテキストを復元するためのルックアップ用関数
 const getQuestionAndOptionText = (qId, codesStr) => {
@@ -23,41 +23,63 @@ const getQuestionAndOptionText = (qId, codesStr) => {
   return { qText, oTexts };
 };
 
-// 全回答コードのパース処理（新旧両対応）
+// フラグの翻訳関数（A1-1などを「A1: 質問 -> 回答」に変換）
+const translateFlag = (flagCode) => {
+  const match = flagCode.trim().match(/^([A-E]\d+)-([a-z0-9]+)$/i);
+  if (!match) return flagCode;
+  
+  const qId = match[1];
+  const optCode = match[2];
+  
+  for (const section of sections) {
+    const q = section.questions.find(q => q.id === qId);
+    if (q) {
+      const opt = q.options.find(o => o.code === optCode);
+      if (opt) {
+        return `${qId}: ${q.question} \n  → ${opt.text}`;
+      }
+    }
+  }
+  return flagCode;
+};
+
+// クロスパターンの翻訳関数（P1などをタイトルと説明文に変換）
+const translatePattern = (patternId) => {
+  const pId = patternId.trim();
+  const pattern = CROSS_PATTERNS.find(p => p.id === pId);
+  if (pattern) {
+    return `【${pattern.title}】 ${pattern.description}`;
+  }
+  return pId;
+};
+
 const parseAllAnswers = (rawAnswersStr) => {
   if (!rawAnswersStr) return [];
   const items = rawAnswersStr.split(' | ');
   
   return items.map(item => {
-    // 古いフォーマットかチェック (例: A1-[1,2] (補足: 〇〇))
     const legacyMatch = item.match(/^([A-E]\d+)-\[(.*?)\](?: \(補足: (.*?)\))?$/);
     if (legacyMatch) {
       const qId = legacyMatch[1];
       const codes = legacyMatch[2];
       const note = legacyMatch[3] || null;
-      
       const { qText, oTexts } = getQuestionAndOptionText(qId, codes);
-      // oTexts は "\n・opt1\n・opt2" の形式になっているので、配列に戻す
       const options = oTexts.split('\n').map(s => s.trim().replace(/^・/, '')).filter(Boolean);
-      
       return { question: `${qId}. ${qText}`, options, note, raw: item };
     }
     
-    // 新しいフォーマットかチェック (例: A1. 〇〇 => \n・△△\n・×× (補足: 〇〇))
     const parts = item.split(' => ');
     if (parts.length >= 2) {
       const questionPart = parts[0].trim();
       let answerPart = parts.slice(1).join(' => ');
 
-      // 補足を抽出
       let note = null;
       const noteMatch = answerPart.match(/\n?\(補足: (.*?)\)$/);
       if (noteMatch) {
         note = noteMatch[1];
-        answerPart = answerPart.replace(noteMatch[0], ''); // 補足部分を削除
+        answerPart = answerPart.replace(noteMatch[0], '');
       }
 
-      // オプションを配列化（改行優先、改行がなければ「、」で分割する後方互換対応）
       let options = [];
       if (answerPart.includes('\n')) {
         options = answerPart.split('\n').map(s => s.trim().replace(/^・/, '')).filter(Boolean);
@@ -68,12 +90,10 @@ const parseAllAnswers = (rawAnswersStr) => {
       return { question: questionPart, options, note, raw: item };
     }
 
-    // フォーマット外の場合はそのまま
     return { question: null, options: [], note: null, raw: item };
   });
 };
 
-// 自動インサイト（分析文章）の生成
 const generateInsight = (client) => {
   const score = client['総合スコア'] || 0;
   const urgency = client['緊急度スコア'] || 0;
@@ -129,9 +149,11 @@ const ClientDetail = ({ client, onBack }) => {
 
   return (
     <div className="app-container animate-enter" style={{ padding: '1.5rem 1rem' }}>
-      <button className="btn btn-secondary mb-4" onClick={onBack} style={{ width: 'auto', padding: '0.5rem 1rem' }}>
-        <ArrowLeft size={16} /> 戻る
-      </button>
+      <div className="sticky-header">
+        <button className="btn btn-secondary" onClick={onBack} style={{ width: 'auto', padding: '0.5rem 1rem' }}>
+          <ArrowLeft size={16} /> 戻る
+        </button>
+      </div>
 
       <div className="glass-panel mb-4">
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{client['会社名'] || '無記名'}</h2>
@@ -147,7 +169,7 @@ const ClientDetail = ({ client, onBack }) => {
       {/* AI自動分析パネル */}
       <div className="glass-panel mb-4" style={{ borderColor: 'var(--primary)', background: 'rgba(14, 165, 233, 0.05)' }}>
         <h3 style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <Lightbulb size={18} /> {client['Ollama分析結果'] ? 'AI自動分析（Ollama）' : 'AI自動分析（速報値）'}
+          <Lightbulb size={18} /> {client['Ollama分析結果'] ? '詳細分析レポート' : '詳細分析レポート準備中'}
         </h3>
         
         {client['Ollama分析結果'] ? (
@@ -157,7 +179,7 @@ const ClientDetail = ({ client, onBack }) => {
         ) : (
           <div style={{ fontSize: '0.875rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
             <div style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.8rem', background: '#e0f2fe', padding: '0.5rem', borderRadius: '4px' }}>
-              ※ローカルAI（Ollama）による詳細分析を待機中です。以下はスコアに基づく簡易レポートです。
+              ※詳細レポートは現在生成処理中です。以下はスコアに基づく簡易レポートです。
             </div>
             <p style={{ marginBottom: '0.75rem' }}><strong>【総評】</strong><br/>{insight.evaluation} {insight.bottleneck}</p>
             {insight.risks.length > 0 && (
@@ -178,7 +200,7 @@ const ClientDetail = ({ client, onBack }) => {
         <div className="flex justify-between items-center mb-4 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
           <div>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>総合スコア</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>{client['総合スコア']} / 75</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>{client['総合スコア']} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: 'var(--text-muted)'}}>/ 75</span></div>
           </div>
           <div className="text-right">
             <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>緊急度スコア</div>
@@ -187,11 +209,11 @@ const ClientDetail = ({ client, onBack }) => {
         </div>
         
         <div className="flex flex-col gap-3" style={{ fontSize: '0.875rem' }}>
-          <div className="flex justify-between"><span>A. 環境・インフラ</span> <strong>{client['カテゴリA']}</strong></div>
-          <div className="flex justify-between"><span>B. 業務フロー</span> <strong>{client['カテゴリB']}</strong></div>
-          <div className="flex justify-between"><span>C. 属人化・スキル</span> <strong>{client['カテゴリC']}</strong></div>
-          <div className="flex justify-between"><span>D. システム・IT</span> <strong>{client['カテゴリD']}</strong></div>
-          <div className="flex justify-between"><span>E. マネジメント</span> <strong>{client['カテゴリE']}</strong></div>
+          <div className="flex justify-between"><span>A. 環境・インフラ</span> <strong>{client['カテゴリA']} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal'}}>/ 15</span></strong></div>
+          <div className="flex justify-between"><span>B. 業務フロー</span> <strong>{client['カテゴリB']} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal'}}>/ 15</span></strong></div>
+          <div className="flex justify-between"><span>C. 属人化・スキル</span> <strong>{client['カテゴリC']} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal'}}>/ 15</span></strong></div>
+          <div className="flex justify-between"><span>D. システム・IT</span> <strong>{client['カテゴリD']} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal'}}>/ 15</span></strong></div>
+          <div className="flex justify-between"><span>E. マネジメント</span> <strong>{client['カテゴリE']} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal'}}>/ 15</span></strong></div>
         </div>
       </div>
 
@@ -202,7 +224,7 @@ const ClientDetail = ({ client, onBack }) => {
         {client['レッドフラグ'] ? (
           <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#dc2626', fontSize: '0.875rem', lineHeight: '1.6' }}>
             {client['レッドフラグ'].split(',').map((flag, idx) => (
-              <li key={idx} style={{ marginBottom: '0.25rem' }}>{flag.trim()}</li>
+              <li key={idx} style={{ marginBottom: '0.5rem', whiteSpace: 'pre-wrap' }}>{translateFlag(flag)}</li>
             ))}
           </ul>
         ) : (
@@ -218,7 +240,7 @@ const ClientDetail = ({ client, onBack }) => {
           {client['把握不足フラグ'] ? (
             <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-muted)' }}>
               {client['把握不足フラグ'].split(',').map((flag, idx) => (
-                <li key={idx} style={{ marginBottom: '0.25rem' }}>{flag.trim()}</li>
+                <li key={idx} style={{ marginBottom: '0.5rem', whiteSpace: 'pre-wrap' }}>{translateFlag(flag)}</li>
               ))}
             </ul>
           ) : (
@@ -231,7 +253,7 @@ const ClientDetail = ({ client, onBack }) => {
           {client['クロスパターン'] ? (
             <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-muted)' }}>
               {client['クロスパターン'].split(',').map((pattern, idx) => (
-                <li key={idx} style={{ marginBottom: '0.25rem' }}>{pattern.trim()}</li>
+                <li key={idx} style={{ marginBottom: '0.5rem' }}>{translatePattern(pattern)}</li>
               ))}
             </ul>
           ) : (
@@ -281,7 +303,6 @@ const ClientDetail = ({ client, onBack }) => {
                   </div>
                 );
               }
-              // パースに失敗した文字列などのフォールバック
               return (
                 <div key={idx} style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
                   {ans.raw}

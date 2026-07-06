@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<DiagnosisFlow />} />
-        <Route path="/admin" element={<AdminContainer />} />
+        <Route path="/admin/*" element={<AdminContainer />} />
       </Routes>
     </Router>
   );
