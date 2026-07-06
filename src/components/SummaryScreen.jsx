@@ -29,9 +29,9 @@ const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
           attributes,
           answers: Object.entries(answers).map(([id, ansData]) => {
             const qText = qMap[id] || id;
-            const aTexts = ansData.options.map(o => o.text).join("、");
-            let res = `${id}. ${qText} => ${aTexts}`;
-            if (ansData.note) res += ` (補足: ${ansData.note})`;
+            const aTexts = ansData.options.map(o => `・${o.text}`).join("\n");
+            let res = `${id}. ${qText} => \n${aTexts}`;
+            if (ansData.note) res += `\n(補足: ${ansData.note})`;
             return res;
           }),
           category_scores: results.categoryScores,

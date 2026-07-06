@@ -14,9 +14,9 @@ const getQuestionAndOptionText = (qId, codesStr) => {
       const codes = codesStr.split(',');
       const texts = codes.map(c => {
         const opt = q.options.find(o => o.code === c.trim());
-        return opt ? opt.text : c;
+        return opt ? `・${opt.text}` : `・${c}`;
       });
-      oTexts = texts.join('、');
+      oTexts = `\n${texts.join('\n')}`;
       break;
     }
   }
