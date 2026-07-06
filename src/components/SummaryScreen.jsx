@@ -19,9 +19,10 @@ const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
         const payload = {
           contact,
           attributes,
-          answers: Object.entries(answers).map(([id, opt]) => {
-            let res = `${id}-${opt.code}`;
-            if (opt.note) res += ` (補足: ${opt.note})`;
+          answers: Object.entries(answers).map(([id, ansData]) => {
+            const codes = ansData.options.map(o => o.code).join(",");
+            let res = `${id}-[${codes}]`;
+            if (ansData.note) res += ` (補足: ${ansData.note})`;
             return res;
           }),
           category_scores: results.categoryScores,

@@ -3,12 +3,13 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const QuestionScreen = ({ question, currentStep, totalSteps, onAnswer, onPrev, selectedOption }) => {
   const [animationKey, setAnimationKey] = useState(question.id);
-  const [localOption, setLocalOption] = useState(selectedOption || null);
+  // selectedOption は { options: [{...}, {...}], note: "..." } の形になる想定
+  const [localOptions, setLocalOptions] = useState(selectedOption?.options || []);
   const [localNote, setLocalNote] = useState(selectedOption?.note || "");
 
   useEffect(() => {
     setAnimationKey(question.id);
-    setLocalOption(selectedOption || null);
+    setLocalOptions(selectedOption?.options || []);
     setLocalNote(selectedOption?.note || "");
   }, [question.id, selectedOption]);
 
@@ -16,12 +17,19 @@ const QuestionScreen = ({ question, currentStep, totalSteps, onAnswer, onPrev, s
   const isFirstInSection = question.id.endsWith('1');
 
   const handleSelect = (option) => {
-    setLocalOption(option);
+    setLocalOptions(prev => {
+      const exists = prev.find(o => o.code === option.code);
+      if (exists) {
+        return prev.filter(o => o.code !== option.code);
+      } else {
+        return [...prev, option];
+      }
+    });
   };
 
   const handleNext = () => {
-    if (localOption) {
-      onAnswer(question.id, { ...localOption, note: localNote });
+    if (localOptions.length > 0) {
+      onAnswer(question.id, { options: localOptions, note: localNote });
     }
   };
 
@@ -48,10 +56,11 @@ const QuestionScreen = ({ question, currentStep, totalSteps, onAnswer, onPrev, s
       )}
 
       <h2>{question.question}</h2>
+      <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>※複数選択可</p>
 
-      <div className="mt-8">
+      <div className="mt-4">
         {question.options.map((opt) => {
-          const isSelected = localOption && localOption.code === opt.code;
+          const isSelected = localOptions.some(o => o.code === opt.code);
           return (
             <div 
               key={opt.code} 
@@ -59,7 +68,7 @@ const QuestionScreen = ({ question, currentStep, totalSteps, onAnswer, onPrev, s
               onClick={() => handleSelect(opt)}
             >
               <input 
-                type="radio" 
+                type="checkbox" 
                 className="option-radio"
                 checked={isSelected}
                 readOnly
@@ -85,7 +94,7 @@ const QuestionScreen = ({ question, currentStep, totalSteps, onAnswer, onPrev, s
         <button className="btn btn-secondary" onClick={onPrev} style={{ width: 'auto', padding: '0.5rem 1rem' }}>
           <ArrowLeft size={16} /> 戻る
         </button>
-        <button className="btn btn-primary" onClick={handleNext} disabled={!localOption} style={{ width: 'auto', padding: '0.5rem 1.5rem' }}>
+        <button className="btn btn-primary" onClick={handleNext} disabled={localOptions.length === 0} style={{ width: 'auto', padding: '0.5rem 1.5rem' }}>
           次へ <ArrowRight size={16} />
         </button>
       </div>
