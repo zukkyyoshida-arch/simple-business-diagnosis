@@ -3,7 +3,7 @@ import { CheckCircle, Loader } from 'lucide-react';
 import { calculateResults } from '../utils/scoring';
 import { CROSS_PATTERNS } from '../data/questions';
 
-const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxRvU44F4tY6sASbsPz2ouPYhtnzmdsVJhvTdx_-4cnWeghgvDIr9sNOi-uLXDAfXICjw/exec";
+const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbz1SMq2UNzN4RrJ5hGxvq3VRWzfa8XNfIsxOrDSVG6edpoepxZjPh8lGrRn7OKB539Mtw/exec";
 
 const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'

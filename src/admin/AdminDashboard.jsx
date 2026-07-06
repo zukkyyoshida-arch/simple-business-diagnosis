@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { LogOut, RefreshCw, AlertCircle } from 'lucide-react';
 
-const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxRvU44F4tY6sASbsPz2ouPYhtnzmdsVJhvTdx_-4cnWeghgvDIr9sNOi-uLXDAfXICjw/exec";
+const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbz1SMq2UNzN4RrJ5hGxvq3VRWzfa8XNfIsxOrDSVG6edpoepxZjPh8lGrRn7OKB539Mtw/exec";
 
 const AdminDashboard = ({ token, onSelectClient, onLogout }) => {
   const [data, setData] = useState([]);
