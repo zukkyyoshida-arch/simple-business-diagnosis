@@ -34,12 +34,12 @@ function App() {
     handleNext();
   };
 
-  const handleAnswerSubmit = (questionId, option) => {
+  const handleAnswerSubmit = (questionId, optionData) => {
     setAnswers(prev => ({
       ...prev,
-      [questionId]: option
+      [questionId]: optionData
     }));
-    setTimeout(handleNext, 300); // 選択後少し待って次へ（UX向上）
+    handleNext();
   };
 
   const handleFreeTextSubmit = (text) => {
