@@ -8,23 +8,31 @@ const AdminDashboard = ({ token, onSelectClient, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = () => {
     setLoading(true);
     setError(null);
-    try {
-      const url = `${GAS_ENDPOINT_URL}?token=${encodeURIComponent(token)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      
+
+    const callbackName = 'gasCallback_' + Date.now();
+    window[callbackName] = (json) => {
       if (json.status === 'success') {
         setData(json.data);
       } else {
         setError(json.message || 'データ取得に失敗しました。パスワードを確認してください。');
       }
-    } catch (e) {
+      setLoading(false);
+      delete window[callbackName];
+      document.head.removeChild(script);
+    };
+
+    const script = document.createElement('script');
+    script.src = `${GAS_ENDPOINT_URL}?token=${encodeURIComponent(token)}&callback=${callbackName}`;
+    script.onerror = () => {
       setError('通信エラーが発生しました');
-    }
-    setLoading(false);
+      setLoading(false);
+      delete window[callbackName];
+      document.head.removeChild(script);
+    };
+    document.head.appendChild(script);
   };
 
   useEffect(() => {
