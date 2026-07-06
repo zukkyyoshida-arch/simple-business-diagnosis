@@ -25,19 +25,23 @@ const ClientDetailWrapper = ({ data, onBack }) => {
 };
 
 const AdminContainer = () => {
-  const [token, setToken] = useState(localStorage.getItem('adminToken') || null);
+  const getStoredToken = () => {
+    try { return localStorage.getItem('adminToken') || null; } catch (e) { return null; }
+  };
+  
+  const [token, setToken] = useState(getStoredToken());
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = (newToken) => {
-    localStorage.setItem('adminToken', newToken);
+    try { localStorage.setItem('adminToken', newToken); } catch (e) {}
     setToken(newToken);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    try { localStorage.removeItem('adminToken'); } catch (e) {}
     setToken(null);
     setData([]);
   };
