@@ -94,8 +94,8 @@ const AdminContainer = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<AdminDashboard data={data} loading={loading} error={error} onRefresh={fetchData} onLogout={handleLogout} onSelectClient={handleSelectClient} />} />
-      <Route path="/:id" element={<ClientDetailWrapper data={data} onBack={handleBack} />} />
+      <Route index element={<AdminDashboard data={data} loading={loading} error={error} onRefresh={fetchData} onLogout={handleLogout} onSelectClient={handleSelectClient} />} />
+      <Route path=":id" element={<ClientDetailWrapper data={data} onBack={handleBack} />} />
     </Routes>
   );
 };
