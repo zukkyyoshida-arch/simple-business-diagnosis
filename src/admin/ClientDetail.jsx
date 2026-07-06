@@ -57,10 +57,13 @@ const parseAllAnswers = (rawAnswersStr) => {
         answerPart = answerPart.replace(noteMatch[0], ''); // 補足部分を削除
       }
 
-      // オプションを配列化（"・"や改行で分割）
-      const options = answerPart.split('\n')
-        .map(s => s.trim().replace(/^・/, ''))
-        .filter(Boolean);
+      // オプションを配列化（改行優先、改行がなければ「、」で分割する後方互換対応）
+      let options = [];
+      if (answerPart.includes('\n')) {
+        options = answerPart.split('\n').map(s => s.trim().replace(/^・/, '')).filter(Boolean);
+      } else {
+        options = answerPart.split('、').map(s => s.trim().replace(/^・/, '')).filter(Boolean);
+      }
 
       return { question: questionPart, options, note, raw: item };
     }
@@ -186,20 +189,44 @@ const ClientDetail = ({ client, onBack }) => {
         <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
           <AlertTriangle size={18} /> レッドフラグ
         </h3>
-        <p style={{ fontSize: '0.875rem', margin: 0 }}>
-          {client['レッドフラグ'] || 'なし'}
-        </p>
+        {client['レッドフラグ'] ? (
+          <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#dc2626', fontSize: '0.875rem', lineHeight: '1.6' }}>
+            {client['レッドフラグ'].split(',').map((flag, idx) => (
+              <li key={idx} style={{ marginBottom: '0.25rem' }}>{flag.trim()}</li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ fontSize: '0.875rem', margin: 0, color: 'var(--text-muted)' }}>なし</p>
+        )}
       </div>
 
       <div className="glass-panel mb-4">
         <h3 style={{ marginBottom: '1rem' }}>把握不足 (U) / クロスパターン</h3>
-        <div style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-          <strong style={{ display: 'block', marginBottom: '0.25rem' }}>Uフラグ:</strong> 
-          {client['把握不足フラグ'] || 'なし'}
+        
+        <div style={{ fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Uフラグ（状況把握不足）:</strong>
+          {client['把握不足フラグ'] ? (
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-muted)' }}>
+              {client['把握不足フラグ'].split(',').map((flag, idx) => (
+                <li key={idx} style={{ marginBottom: '0.25rem' }}>{flag.trim()}</li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ color: 'var(--text-muted)' }}>なし</div>
+          )}
         </div>
+        
         <div style={{ fontSize: '0.875rem' }}>
-          <strong style={{ display: 'block', marginBottom: '0.25rem' }}>クロスパターン:</strong> 
-          {client['クロスパターン'] || 'なし'}
+          <strong style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-main)' }}>クロスパターン:</strong>
+          {client['クロスパターン'] ? (
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-muted)' }}>
+              {client['クロスパターン'].split(',').map((pattern, idx) => (
+                <li key={idx} style={{ marginBottom: '0.25rem' }}>{pattern.trim()}</li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ color: 'var(--text-muted)' }}>なし</div>
+          )}
         </div>
       </div>
 
@@ -213,7 +240,7 @@ const ClientDetail = ({ client, onBack }) => {
           <strong style={{ display: 'block', marginBottom: '0.25rem' }}>探しもの時間:</strong> 
           {client['探しもの時間'] || '-'}
         </div>
-        <div style={{ fontSize: '0.875rem', marginBottom: '1.5rem', whiteSpace: 'pre-wrap' }}>
+        <div style={{ fontSize: '0.875rem', marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
           <strong style={{ display: 'block', marginBottom: '0.25rem' }}>自由記述:</strong>
           {client['自由記述'] || 'なし'}
         </div>
