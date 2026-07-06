@@ -76,10 +76,29 @@ const ClientDetail = ({ client, onBack }) => {
           <strong style={{ display: 'block', marginBottom: '0.25rem' }}>自由記述:</strong>
           {client['自由記述'] || 'なし'}
         </div>
-        <div style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-          <strong style={{ display: 'block', marginBottom: '0.5rem' }}>全回答コード:</strong>
-          <div style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)', wordBreak: 'break-all' }}>
-            {client['全回答コード']}
+        <div style={{ fontSize: '0.875rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+          <strong style={{ display: 'block', marginBottom: '1rem', fontSize: '1rem' }}>すべての回答詳細:</strong>
+          <div className="flex flex-col gap-3">
+            {client['全回答コード'] ? client['全回答コード'].split(' | ').map((ansStr, idx) => {
+              const parts = ansStr.split(' => ');
+              if (parts.length >= 2) {
+                const questionPart = parts[0];
+                const answerPart = parts.slice(1).join(' => '); // In case " => " exists in the answer text
+                return (
+                  <div key={idx} style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--primary)' }}>{questionPart}</div>
+                    <div style={{ color: 'var(--text-main)', lineHeight: '1.5' }}>{answerPart}</div>
+                  </div>
+                );
+              }
+              return (
+                <div key={idx} style={{ background: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                  {ansStr}
+                </div>
+              );
+            }) : (
+              <div style={{ color: 'var(--text-muted)' }}>回答データがありません</div>
+            )}
           </div>
         </div>
       </div>

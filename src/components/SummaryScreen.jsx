@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Loader } from 'lucide-react';
 import { calculateResults } from '../utils/scoring';
-import { CROSS_PATTERNS } from '../data/questions';
+import { CROSS_PATTERNS, sections } from '../data/questions';
 
 const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbz1SMq2UNzN4RrJ5hGxvq3VRWzfa8XNfIsxOrDSVG6edpoepxZjPh8lGrRn7OKB539Mtw/exec";
 
@@ -16,12 +16,21 @@ const SummaryScreen = ({ attributes, answers, freeText, contact }) => {
         const results = calculateResults(answers, attributes);
         setSummaryData(results);
 
+        // 質問テキストのルックアップマップを作成
+        const qMap = {};
+        sections.forEach(s => {
+          s.questions.forEach(q => {
+            qMap[q.id] = q.question;
+          });
+        });
+
         const payload = {
           contact,
           attributes,
           answers: Object.entries(answers).map(([id, ansData]) => {
-            const codes = ansData.options.map(o => o.code).join(",");
-            let res = `${id}-[${codes}]`;
+            const qText = qMap[id] || id;
+            const aTexts = ansData.options.map(o => o.text).join("、");
+            let res = `${id}. ${qText} => ${aTexts}`;
             if (ansData.note) res += ` (補足: ${ansData.note})`;
             return res;
           }),
